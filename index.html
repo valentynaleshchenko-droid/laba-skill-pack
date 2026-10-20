@@ -308,6 +308,18 @@ h1{max-width:22ch}
 .price s{font-size:13px;font-weight:500;color:var(--muted)}
 .price span{font-size:22px;font-weight:800;color:var(--ink)}
 .price small{display:block;font-size:12px;font-weight:700;color:var(--cta)}
+
+.rule{margin:10px 0 0;display:inline-block;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:14px;line-height:1.4;max-width:640px}
+.price small{font-weight:600}
+.setnote{margin:8px 0 0;font-size:13px;color:var(--cta);font-weight:600;line-height:1.35}
+.tot small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.tot>span:last-child{white-space:nowrap}
+@media (max-width:1099px){.cart.bump{animation:none!important}}
+.hint{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;line-height:1.35;max-width:min(92vw,520px);z-index:60;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.hint b{color:var(--yellow)}
+.hint.ok{background:#1a7f4e}.hint.ok b{color:#fff}
+.hint.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:1099px){.hint{bottom:88px}}
 /* phone: bottom bar + drawer */
 .shade{display:none}
 
@@ -328,6 +340,7 @@ h1{max-width:22ch}
     <div class="brand"><span class="logo">Laba</span><span class="bf">Black Friday</span></div>
     <h1>Skill Pack: <span style="white-space:nowrap">будь-які 3 курси</span> — <mark>−40%</mark></h1>
     <p class="lead">Конструктор Black Friday. Обери три курси, які потрібні саме тобі, оплати зараз зі знижкою 40% і проходь їх протягом року.</p>
+    <p class="rule"><b>Як працює знижка:</b> −40% діє на весь чек, коли в ньому 3 курси. 1 або 2 курси — за повною ціною.</p>
     <ul class="perks"><li><b>Оплата зараз</b> — навчання протягом року</li><li><b>Сам, з колегами</b> або віддай курси команді</li><li><b>Більше курсів?</b> Кожні наступні 3 — ще один Skill Pack −40%</li></ul>
   </header>
 
@@ -777,13 +790,18 @@ function orderText(){
     T.sets.map((s,i)=>`Skill Pack ${i+1}${s.length<3?" (неповний, без знижки)":""}:\n`+s.map((c,j)=>`${j+1}. ${fullName(c)} — ${uah(c.p)}${", старт "+(c.st||"у 2027 році")}${c.u?"\n   "+c.u:""}`).join("\n")).join("\n\n")+
     `\n\nСума: ${uah(T.sum)}\nЗнижка: −${uah(T.disc)}\nДо сплати: ${uah(T.due)}`;
 }
+let hintT;
+function showHint(){ const n=st.pick.length, k=n%3; let h=document.getElementById("hint");
+  if(!h){ h=document.createElement("div"); h.id="hint"; h.className="hint"; h.setAttribute("role","status"); document.body.appendChild(h); }
+  h.innerHTML= k? `<b>${k} з 3</b> у Skill Pack ${Math.ceil(n/3)} — додай ще ${3-k}, і −40% спрацює на всі три` : `<b>Skill Pack ${n/3} зібрано</b> — −40% на всі три курси ✓`;
+  h.classList.toggle("ok",!k); void h.offsetWidth; h.classList.add("show"); clearTimeout(hintT); hintT=setTimeout(()=>h.classList.remove("show"),3500); }
 function renderCart(){
   const T=totals(), n=st.pick.length;
   let h=`<div class="cart-h"><h2>Мій Skill Pack${n?`<span class="cnt-badge num">${n}</span>`:""}</h2><button type="button" class="close" id="close" aria-label="Закрити кошик">×</button></div>`;
   const sets=T.sets.length&&T.sets[T.sets.length-1].length===3&&n<MAXC?[...T.sets,[]]:T.sets.length?T.sets:[[]];
   sets.forEach((s,i)=>{ const done=s.length===3, left=3-s.length, fresh=!s.length&&i>0;
-    h+=`<div class="set${done?" done":""}"><div class="set-h"><b>Skill Pack ${i+1}</b>${done?`<span class="pill">−40% ✓</span>`:`<span class="pill off">ще ${left} до −40%</span>`}</div>
-    <div class="meter">${[0,1,2].map(j=>`<i class="${j<s.length?"on":""}"></i>`).join("")}</div>`;
+    h+=`<div class="set${done?" done":""}"><div class="set-h"><b>Skill Pack ${i+1}</b>${done?`<span class="pill">−40% ✓</span>`:`<span class="pill off">${s.length?`додай ще ${left}`:`3 курси = −40%`}</span>`}</div>
+    <div class="meter">${[0,1,2].map(j=>`<i class="${j<s.length?"on":""}"></i>`).join("")}</div>${!done&&s.length?`<p class="setnote">Додай ще ${left} ${plural(left,"курс","курси","курсів")} — і знижка −40% спрацює на всі три.</p>`:""}`;
     if(fresh) h+=`<p class="note" style="font-size:13px">Додай ще три курси, і на них теж буде −40%. Що ще прокачати?</p>
       <div class="chips mini">${GROW.slice(0,5).map(g=>`<button type="button" class="chip" data-growgo="${g[0]}">+ ${g[1]}</button>`).join("")}</div>`;
     else { h+=`<ol class="slots">`;
@@ -827,7 +845,7 @@ document.addEventListener("click",e=>{
   else if(t.dataset.sen){ const k=t.dataset.sen,i=st.sen.indexOf(k); if(i>=0) st.sen.splice(i,1); else st.sen.push(k); renderShop(); renderReset(); }
   else if(t.dataset.add){ const id=+t.dataset.add, i=st.pick.indexOf(id);
     if(i>=0) st.pick.splice(i,1); else if(st.pick.length<MAXC) st.pick.push(id); render();
-    if(i<0) for(const el of [$("cart"),$("bar")]){ el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+    if(i<0) showHint(); if(i<0) for(const el of [$("cart"),$("bar")]){ el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
     if(st.pick.length%3===0 && i<0 && innerWidth<=960) openCart(true); }
   else if(t.dataset.rm){ st.pick=st.pick.filter(x=>x!==+t.dataset.rm); render(); }
   else if(t.dataset.ready){ const ids=t.dataset.ready.split(",").map(Number);
