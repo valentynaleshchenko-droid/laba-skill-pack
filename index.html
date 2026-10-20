@@ -202,8 +202,8 @@ h2{font-weight:800;letter-spacing:-.02em}
 .me h2{font-size:clamp(18px,2.4vw,24px)}
 .me-in{background:#F6F6F2;border-color:transparent;font-weight:500;border-radius:12px}
 .me-in:focus{border-color:var(--ink);background:#fff}
-.ex button{background:var(--yellow);color:var(--ink);font-weight:600}
-.ex button:hover{background:var(--yellow-2)}
+.ex button{background:#fff;color:var(--ink);font-weight:500;border:1.5px solid var(--line);padding:5px 11px}
+.ex button:hover{border-color:var(--ink);background:#fff}
 .sec-title{font-weight:800;color:var(--ink);font-size:15px;letter-spacing:-.01em}
 .btn,.add{border-radius:10px;font-weight:700}
 .add{background:var(--ink);border-color:var(--ink)}
@@ -315,11 +315,28 @@ h1{max-width:22ch}
 .tot small{display:block;font-weight:500;color:var(--muted);font-size:12px}
 .tot>span:last-child{white-space:nowrap}
 @media (max-width:1099px){.cart.bump{animation:none!important}}
-.hint{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;line-height:1.35;max-width:min(92vw,520px);z-index:60;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,.18)}
-.hint b{color:var(--yellow)}
-.hint.ok{background:#1a7f4e}.hint.ok b{color:#fff}
-.hint.show{opacity:1;transform:translate(-50%,0)}
-@media (max-width:1099px){.hint{bottom:88px}}
+.ptoast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;line-height:1.35;max-width:min(92vw,520px);z-index:60;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.ptoast b{color:var(--yellow)}
+.ptoast.ok{background:#1a7f4e}.ptoast.ok b{color:#fff}
+.ptoast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:1099px){.ptoast{bottom:88px}}
+
+.me-lbl{display:block;margin:14px 0 6px;font-weight:800;font-size:15px}
+.me-box{position:relative;flex:1 1 300px;min-width:0;display:flex}
+.me-box .pen{position:absolute;left:14px;top:50%;width:20px;height:20px;transform:translateY(-50%);color:var(--ink);pointer-events:none}
+.me-box .me-in{flex:1;width:100%;background:#fff!important;border:2px solid var(--ink)!important;padding:15px 14px 15px 44px;font-size:17px;border-radius:14px;box-shadow:0 0 0 4px var(--yellow)}
+.me-box .me-in:focus{box-shadow:0 0 0 4px var(--cta)}
+.me-box .me-in::placeholder{color:#8a8a80}
+.me-go{width:auto!important;background:var(--cta)!important;color:#fff!important;border:0;border-radius:14px;padding:0 22px;font-weight:800;min-height:54px}
+@media (max-width:600px){.me-go{flex:1 1 100%}}
+
+.lead b{font-weight:800}
+header .lead{max-width:780px}
+#me-h label{cursor:text}
+.me-row{margin-top:14px}
+.grow-toggle{font:inherit;font-weight:700;font-size:15px;background:none;border:0;padding:6px 0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.cart-empty{border:1.5px dashed var(--line);border-radius:14px;padding:14px}
+.perks-note{margin-top:12px}
 /* phone: bottom bar + drawer */
 .shade{display:none}
 
@@ -339,17 +356,14 @@ h1{max-width:22ch}
   <header>
     <div class="brand"><span class="logo">Laba</span><span class="bf">Black Friday</span></div>
     <h1>Skill Pack: <span style="white-space:nowrap">будь-які 3 курси</span> — <mark>−40%</mark></h1>
-    <p class="lead">Конструктор Black Friday. Обери три курси, які потрібні саме тобі, оплати зараз зі знижкою 40% і проходь їх протягом року.</p>
-    <p class="rule"><b>Як працює знижка:</b> −40% діє на весь чек, коли в ньому 3 курси. 1 або 2 курси — за повною ціною.</p>
-    <ul class="perks"><li><b>Оплата зараз</b> — навчання протягом року</li><li><b>Сам, з колегами</b> або віддай курси команді</li><li><b>Більше курсів?</b> Кожні наступні 3 — ще один Skill Pack −40%</li></ul>
+    <p class="lead"><b>−40% на весь чек, коли в ньому 3 курси.</b> Оплачуєш зараз — навчаєшся протягом року.</p>
   </header>
 
   <div class="layout">
   <section class="me" aria-labelledby="me-h">
-    <h2 id="me-h">Збери свій Skill Pack: напиши, хто ти і в якій сфері працюєш</h2>
-    <p class="hint" style="margin:0">Посада, сфера бізнесу і що хочеш покращити. Чим конкретніше, тим точніше підбір.</p>
-    <div class="me-row"><input class="me-in" id="who" type="text" autocomplete="off" placeholder="Наприклад: керівник відділу продажів у дистрибуції, хочу прокачати команду" aria-label="Опиши себе своїми словами"><button type="button" class="btn ghost" id="whoClear" style="width:auto" hidden>Очистити</button></div>
-    <div class="ex" id="examples"><span>Або спробуй:</span></div>
+    <h2 id="me-h"><label for="who">Хто ти і що хочеш прокачати?</label></h2>
+    <div class="me-row"><div class="me-box"><svg class="pen" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><input class="me-in" id="who" type="text" autocomplete="off" placeholder="Наприклад: власниця кав'ярні, хочу навести лад у фінансах" aria-label="Опиши себе своїми словами"></div><button type="button" class="btn me-go" id="whoGo">Підібрати курси</button><button type="button" class="btn ghost" id="whoClear" style="width:auto" hidden>Очистити</button></div>
+    <div class="ex" id="examples"><span>Наприклад:</span></div>
     <div class="me-res" id="meRes" hidden></div>
     <div class="grow" id="grow" hidden></div>
   </section>
@@ -688,6 +702,7 @@ function renderGrow(){
   const offer=GROW.filter(g=>!covered.includes(g[0]));
   st.grow=st.grow.filter(k=>offer.some(g=>g[0]===k));
   const already=covered.map(k=>GN[k]).join(" і ");
+  if(fresh&&!st.growOpen&&!st.grow.length){ box.innerHTML=`<button type="button" class="grow-toggle" data-growopen="1">Або обери напрям <span aria-hidden="true">▾</span></button>`; return; }
   let h=`<div class="grow-q"><h3>${fresh?"Або обери напрям":"Що ще хочеш прокачати?"}</h3>
     <div class="chips">${offer.map(g=>`<button type="button" class="chip" data-grow="${g[0]}" aria-pressed="${st.grow.includes(g[0])}">${st.grow.includes(g[0])?'<span aria-hidden="true">✓</span>':"+ "}${g[1]}</button>`).join("")}</div></div>`;
   const skip=new Set(), mix=[];
@@ -791,13 +806,19 @@ function orderText(){
     `\n\nСума: ${uah(T.sum)}\nЗнижка: −${uah(T.disc)}\nДо сплати: ${uah(T.due)}`;
 }
 let hintT;
-function showHint(){ const n=st.pick.length, k=n%3; let h=document.getElementById("hint");
-  if(!h){ h=document.createElement("div"); h.id="hint"; h.className="hint"; h.setAttribute("role","status"); document.body.appendChild(h); }
+function showHint(){ const n=st.pick.length, k=n%3; let h=document.getElementById("pickToast");
+  if(!h){ h=document.createElement("div"); h.id="pickToast"; h.className="ptoast"; h.setAttribute("role","status"); document.body.appendChild(h); }
   h.innerHTML= k? `<b>${k} з 3</b> у Skill Pack ${Math.ceil(n/3)} — додай ще ${3-k}, і −40% спрацює на всі три` : `<b>Skill Pack ${n/3} зібрано</b> — −40% на всі три курси ✓`;
   h.classList.toggle("ok",!k); void h.offsetWidth; h.classList.add("show"); clearTimeout(hintT); hintT=setTimeout(()=>h.classList.remove("show"),3500); }
 function renderCart(){
   const T=totals(), n=st.pick.length;
   let h=`<div class="cart-h"><h2>Мій Skill Pack${n?`<span class="cnt-badge num">${n}</span>`:""}</h2><button type="button" class="close" id="close" aria-label="Закрити кошик">×</button></div>`;
+  if(!n){ h+=`<div class="cart-empty"><div class="set-h"><b>0 з 3 курсів</b><span class="pill off">3 курси = −40%</span></div>
+      <div class="meter"><i></i><i></i><i></i></div>
+      <p class="note" style="margin:10px 0 0">Додай 3 курси — і отримаєш −40% на весь чек.</p></div>
+      <p class="note perks-note">Курси можна пройти самому, з колегами або віддати команді. Кожні наступні 3 — ще один Skill Pack −40%.</p>`;
+    $("cart").innerHTML=h;
+    $("barTxt").innerHTML=`<span class="dots"><i></i><i></i><i></i></span>Skill Pack порожній<br>3 курси = −40%`; return; }
   const sets=T.sets.length&&T.sets[T.sets.length-1].length===3&&n<MAXC?[...T.sets,[]]:T.sets.length?T.sets:[[]];
   sets.forEach((s,i)=>{ const done=s.length===3, left=3-s.length, fresh=!s.length&&i>0;
     h+=`<div class="set${done?" done":""}"><div class="set-h"><b>Skill Pack ${i+1}</b>${done?`<span class="pill">−40% ✓</span>`:`<span class="pill off">${s.length?`додай ще ${left}`:`3 курси = −40%`}</span>`}</div>
@@ -818,7 +839,7 @@ function renderCart(){
   if(T.full) h+=`<button type="button" class="btn" id="order">Оформити зі знижкою</button><div id="orderBox"></div>`;
   else if(!n) h+=`<p class="note">Натисни «+ У Skill Pack» на курсі або візьми готовий набір.</p>`;
   if(n) h+=`<button type="button" class="btn ghost" id="clear">Очистити кошик</button>`;
-  h+=`<p class="note">Black Friday: −40% на кожні три курси, до трьох Skill Pack. Оплачуєш зараз, навчаєшся протягом року. Остаточну ціну й оплату частинами підтвердить менеджер.</p>`;
+  h+=`<p class="note">Курси можна пройти самому, з колегами або віддати команді. Кожні наступні 3 — ще один Skill Pack −40% (до трьох). Остаточну ціну й оплату частинами підтвердить менеджер.</p>`;
   $("cart").innerHTML=h;
   const dots=`<span class="dots">${[0,1,2].map(k=>`<i class="${k<(n%3||(n?3:0))?"on":""}"></i>`).join("")}</span>`;
   $("barTxt").innerHTML= n? dots+`<b class="num">${uah(T.due)}</b><br>${n} ${plural(n,"курс","курси","курсів")}${T.full?` · −40% на ${T.full} Skill Pack`:` · до −40% ще ${3-n%3}`}` : dots+`Skill Pack порожній<br>3 курси = −40%`;
@@ -856,7 +877,9 @@ document.addEventListener("click",e=>{
   else if(t.dataset.growgo){ if(!st.grow.includes(t.dataset.growgo)) st.grow.push(t.dataset.growgo); openCart(false); render(); $("grow").scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(t.dataset.ask){ applyAsk(t.dataset.ask,t.dataset.val); }
   else if(t.dataset.niche){ $("who").value=st.who=st.who.replace(/[.,;\s]+$/,"")+": "+t.dataset.niche; render(); }
-  else if(t.dataset.ex){ $("who").value=st.who=t.dataset.ex; render(); }
+  else if(t.dataset.growopen){ st.growOpen=true; renderGrow(); }
+  else if(t.dataset.ex){ typeInto(t.dataset.ex); }
+  else if(t.id==="whoGo"){ const w=$("who"); if(!w.value.trim()){ w.focus(); return; } const r=$("meRes"); if(r&&!r.hidden) r.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(t.id==="whoClear"){ $("who").value=st.who=""; render(); $("who").focus(); }
   else if(t.id==="clear"){ st.pick=[]; render(); }
   else if(t.id==="barBtn"){ openCart(true); }
@@ -871,7 +894,21 @@ document.addEventListener("click",e=>{
 });
 $("q")&&$("q").addEventListener("input",e=>{ st.q=e.target.value; renderShop(); renderReset(); });
 let whoT; $("who").addEventListener("input",e=>{ st.who=e.target.value; clearTimeout(whoT); whoT=setTimeout(()=>{renderWho(); renderShop(); renderCart(); renderGrow(); renderReset();},200); });
-$("examples").insertAdjacentHTML("beforeend",EXAMPLES.map(x=>`<button type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join(""));
+let typing=0;
+function typeInto(s){ const w=$("who"), my=++typing; let i=0; w.value=""; stopPh();
+  (function step(){ if(my!==typing) return; i+=2; w.value=s.slice(0,i); if(i<s.length) setTimeout(step,18); else { st.who=s; render(); const r=$("meRes"); if(r&&!r.hidden&&innerWidth<1100) setTimeout(()=>r.scrollIntoView({behavior:"smooth",block:"start"}),150); } })(); }
+let phT, phOn=true;
+function stopPh(){ phOn=false; clearTimeout(phT); $("who").placeholder="Наприклад: власниця кав'ярні, хочу навести лад у фінансах"; }
+(function ph(){ const w=$("who"); if(!w) return; const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches; if(reduce) return;
+  let k=0,i=0,dir=1;
+  (function tick(){ if(!phOn) return; if(document.activeElement===w||w.value){ phT=setTimeout(tick,800); return; }
+    const s=EXAMPLES[k%EXAMPLES.length]; i+=dir;
+    w.placeholder=s.slice(0,i)+(dir>0?"|":"");
+    if(dir>0&&i>=s.length){ dir=-1; phT=setTimeout(tick,1600); return; }
+    if(dir<0&&i<=0){ dir=1; k++; phT=setTimeout(tick,300); return; }
+    phT=setTimeout(tick,dir>0?55:18); })(); })();
+$("who").addEventListener("focus",()=>{ $("who").placeholder="Наприклад: власниця кав'ярні, хочу навести лад у фінансах"; });
+$("examples").insertAdjacentHTML("beforeend",EXAMPLES.slice(0,3).map(x=>`<button type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join(""));
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") openCart(false); });
 render();
 </script>
