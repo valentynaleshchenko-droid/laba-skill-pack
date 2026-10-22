@@ -412,7 +412,7 @@ h1 mark{border-radius:8px}
 /* phone: bottom bar + drawer */
 .shade{display:none}
 
-  .cart{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:85vh;border-radius:18px 18px 0 0;z-index:20;transform:translateY(105%);overflow:auto;transition:transform .25s;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+  .cart{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:85vh;max-height:85dvh;border-radius:18px 18px 0 0;z-index:20;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;transform:translateY(105%);overflow:auto;transition:transform .25s;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
   .cart.open{transform:none}
   .close{display:block}
   .shade.open{display:block;position:fixed;inset:0;background:var(--shade);z-index:15}
@@ -956,7 +956,13 @@ function renderCart(){
   $("barTxt").innerHTML= n? dots+`<b class="num">${uah(T.due)}</b><br>${n} ${plural(n,"курс","курси","курсів")}${T.full?` · −40% на ${T.full} Skill Pack`:` · до −40% ще ${3-n%3}`}` : dots+`Skill Pack порожній<br>3 курси = −40%`;
 }
 
-function openCart(on){ $("cart").classList.toggle("open",on); $("shade").classList.toggle("open",on); }
+// На телефоні/планшеті кошик — шторка. Вона живе в .hero (clip-path + isolation), тож відкриту шторку переносимо в <body>, щоб її нічого не обрізало й не перекривало.
+let cartHome=null;
+function openCart(on){ const c=$("cart");
+  if(on&&!matchMedia("(min-width:1100px)").matches&&c.parentNode!==document.body){ cartHome=document.createComment("cart"); c.parentNode.insertBefore(cartHome,c); document.body.appendChild(c); }
+  c.classList.toggle("open",on); $("shade").classList.toggle("open",on); document.documentElement.style.overflow=on&&cartHome?"hidden":"";
+  if(!on&&cartHome){ setTimeout(()=>{ if(!c.classList.contains("open")&&cartHome){ cartHome.parentNode.insertBefore(c,cartHome); cartHome.remove(); cartHome=null; } },300); }
+}
 const isDefault=()=>!st.sphere&&!st.topics.length&&!st.dir&&!st.sen.length&&!st.q.trim()&&!st.who.trim()&&!st.grow.length;
 function renderReset(){ document.querySelectorAll("[data-reset]").forEach(b=>b.hidden=isDefault()); }
 function resetFilters(){
