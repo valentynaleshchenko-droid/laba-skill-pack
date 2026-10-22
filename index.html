@@ -148,6 +148,7 @@ h2{font-family:var(--f-display);font-weight:500;font-size:18px;margin:0}
 
 
 .grow{display:grid;gap:18px;border-top:1px dashed var(--line);padding-top:16px}
+.grow-out{border-top:0;padding-top:0;margin-top:22px}
 .grow:first-child{border-top:0}
 .grow-q{display:grid;gap:8px}
 .grow-q h3{font-family:var(--f-display);font-weight:500;font-size:17px;margin:0}
@@ -441,6 +442,7 @@ h1 mark{border-radius:8px}
     <p class="step-h"><label for="who">Або напиши свій запит</label></p>
     <div class="me-row"><div class="me-box"><svg class="pen" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><input class="me-in" id="who" type="text" autocomplete="off" placeholder="Наприклад: власниця кав'ярні, хочу навести лад у фінансах" aria-label="Опиши себе своїми словами"></div><button type="button" class="btn me-go" id="whoGo">Підібрати курси</button><button type="button" class="btn ghost" id="whoClear" style="width:auto" hidden>Очистити</button></div>
     <div class="me-res" id="meRes" hidden></div>
+    <div class="grow grow-out" id="growRows" hidden></div>
   </section>
   <aside class="cart" id="cart" aria-label="Мій Skill Pack" aria-live="polite"></aside>
   </div>
@@ -832,6 +834,9 @@ function renderGrow(){
       <div class="pr num"><span class="old">${uah(sum)}</span><span class="new">${uah(sum*(1-DISC))}</span></div>
       <button type="button" class="btn ghost" data-ready="${ids.map(c=>c.id).join(",")}">Додати як окремий набір</button></div>`; }
   box.innerHTML=h;
+  // поки людина не писала запит: кнопки напрямів — над рядком «Або напиши свій запит», а курси — під ним, щоб рядок не губився під курсами
+  const out=$("growRows"); out.innerHTML=""; out.hidden=true;
+  if(fresh){ const rows=[...box.children].filter(el=>!el.classList.contains("grow-q")); if(rows.length){ rows.forEach(el=>out.appendChild(el)); out.hidden=false; } }
 }
 
 function renderChips(){
@@ -998,7 +1003,7 @@ document.addEventListener("click",e=>{
   else if(t.dataset.grow){ const k=t.dataset.grow; st.grow=st.grow.includes(k)?[]:[k]; st.indSub=""; render(); }
   // напрям, обраний з кошика, показуємо САМ — без раніше обраних напрямів
   else if(t.dataset.growgo){ const k=t.dataset.growgo; st.grow=[k]; st.indSub=""; openCart(false); render();
-    requestAnimationFrame(()=>{ const row=document.querySelector(`#grow [data-row="${k}"]`)||$("grow"); window.scrollTo({top:row.getBoundingClientRect().top+scrollY-12,behavior:"smooth"}); }); }
+    requestAnimationFrame(()=>{ const row=document.querySelector(`[data-row="${k}"]`)||$("grow"); window.scrollTo({top:row.getBoundingClientRect().top+scrollY-12,behavior:"smooth"}); }); }
   else if(t.dataset.ask){ applyAsk(t.dataset.ask,t.dataset.val); }
   else if(t.dataset.niche){ $("who").value=st.who=st.who.replace(/[.,;\s]+$/,"")+": "+t.dataset.niche; render(); }
   else if(t.dataset.exmore){ $("examples").classList.add("open"); }
