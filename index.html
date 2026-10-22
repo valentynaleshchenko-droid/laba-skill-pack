@@ -343,6 +343,8 @@ header .lead{max-width:780px}
 @media (max-width:700px){.ex:not(.open) button[data-ex]:nth-of-type(n+6){display:none}.ex:not(.open) .ex-more{display:inline-block}}
 
 #me-h{margin:0 0 12px}
+.me-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.me-top #me-h{margin:0!important}
+.reset-f{font:inherit;font-size:12px;font-weight:700;background:var(--ink);color:#fff;border:0;border-radius:99px;padding:5px 11px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;align-self:center}.reset-f span{color:var(--yellow);font-size:11px}.reset-f:hover{background:#000}
 .who-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .who-card{font:inherit;text-align:left;display:grid;gap:4px;align-content:start;background:var(--yellow);border:2px solid transparent;border-radius:16px;padding:14px 14px 16px;cursor:pointer;min-height:88px;transition:transform .12s,border-color .12s}
 .who-card b{font-family:var(--f-display);font-weight:800;font-size:17px;line-height:1.15;color:var(--ink)}
@@ -433,7 +435,7 @@ h1 mark{border-radius:8px}
 
   <div class="layout">
   <section class="me" aria-labelledby="me-h">
-    <h2 id="me-h">Хто ти?</h2>
+    <div class="me-top"><h2 id="me-h">Хто ти?</h2><button type="button" class="reset-f" data-reset="1" hidden>Скинути фільтри <span aria-hidden="true">✕</span></button></div>
     <div class="role-chips" id="roles"></div>
     <div class="grow" id="grow" hidden></div>
     <p class="step-h"><label for="who">Або напиши свій запит</label></p>
@@ -822,7 +824,7 @@ function renderGrow(){
     const ps=uniqTake(all,3); if(ps[0]&&!mix.includes(ps[0])) mix.push(ps[0]);
     const sum=ps.reduce((s,c)=>s+c.p,0);
     h+=`<div class="grow-row"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p>
-      ${ps.length===3?`<button type="button" class="btn ghost" data-ready="${ps.map(c=>c.id).join(",")}" style="width:auto">Топ-3 окремим набором · <span class="num">${uah(sum*(1-DISC))}</span></button>`:""}</div>
+      ${ps.length===3?(ps.every(c=>st.pick.includes(c.id))?`<button type="button" class="btn ghost" disabled style="width:auto">✓ Топ-3 уже в Skill Pack</button>`:`<button type="button" class="btn ghost" data-ready="${ps.map(c=>c.id).join(",")}" style="width:auto">Топ-3 окремим набором · <span class="num">${uah(sum*(1-DISC))}</span></button>`):""}</div>
       <div class="grid">${all.map(c=>{ const rk=!st.who.trim()&&(ROLES.find(r=>r[0]===st.role)||[])[2]; const team=(rk==="own"||rk==="head")&&c.aud&&c.aud.length&&!c.aud.includes("own")&&!c.aud.includes("head"); return tile(c,true,team); }).join("")}</div></div>`;
   }
   if(mix.length>=3){ const ids=mix.slice(0,3), sum=ids.reduce((s,c)=>s+c.p,0);
@@ -958,17 +960,17 @@ function renderCart(){
 
 // На телефоні/планшеті кошик — шторка. Вона живе в .hero (clip-path + isolation), тож відкриту шторку переносимо в <body>, щоб її нічого не обрізало й не перекривало.
 let cartHome=null;
-function openCart(on){ const c=$("cart");
+function openCart(on){ const c=$("cart"); if(on){ const pt=document.getElementById("pickToast"); if(pt) pt.classList.remove("show"); }
   if(on&&!matchMedia("(min-width:1100px)").matches&&c.parentNode!==document.body){ cartHome=document.createComment("cart"); c.parentNode.insertBefore(cartHome,c); document.body.appendChild(c); }
   c.classList.toggle("open",on); $("shade").classList.toggle("open",on); document.documentElement.style.overflow=on&&cartHome?"hidden":"";
   if(!on&&cartHome){ setTimeout(()=>{ if(!c.classList.contains("open")&&cartHome){ cartHome.parentNode.insertBefore(c,cartHome); cartHome.remove(); cartHome=null; } },300); }
 }
-const isDefault=()=>!st.sphere&&!st.topics.length&&!st.dir&&!st.sen.length&&!st.q.trim()&&!st.who.trim()&&!st.grow.length;
+const isDefault=()=>!st.role&&!st.sphere&&!st.topics.length&&!st.dir&&!st.sen.length&&!st.q.trim()&&!st.who.trim()&&!st.grow.length;
 function renderReset(){ document.querySelectorAll("[data-reset]").forEach(b=>b.hidden=isDefault()); }
 function resetFilters(){
-  Object.assign(st,{sphere:"",topics:[],dir:"",sen:[],q:"",who:"",grow:[]});
+  Object.assign(st,{role:"",sphere:"",topics:[],dir:"",sen:[],q:"",who:"",grow:[],moreDirs:false,indSub:""});
   if($("q")) $("q").value=""; $("who").value="";
-  render(); $("me-h").scrollIntoView({behavior:"smooth",block:"start"});
+  render(); renderRoles(); $("me-h").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function render(){ renderChips(); renderWho(); renderShop(); renderCart(); renderGrow(); renderReset(); save(); }
 
@@ -987,8 +989,10 @@ document.addEventListener("click",e=>{
     if(st.pick.length%3===0 && i<0 && innerWidth<=960) openCart(true); }
   else if(t.dataset.rm){ st.pick=st.pick.filter(x=>x!==+t.dataset.rm); render(); }
   else if(t.dataset.ready){ const ids=t.dataset.ready.split(",").map(Number);
-    st.pick=st.pick.slice(0,st.pick.length-st.pick.length%3);
-    for(const id of ids){ if(!st.pick.includes(id)&&st.pick.length<MAXC) st.pick.push(id); }
+    // нічого з кошика не викидаємо: готовий набір стає окремим паком, а недозібрані курси лишаються й чекають на свій пак
+    const cut=st.pick.length-st.pick.length%3, full=st.pick.slice(0,cut), part=st.pick.slice(cut);
+    const fresh=ids.filter(id=>!st.pick.includes(id)).slice(0,Math.max(0,MAXC-st.pick.length));
+    st.pick=[...full,...fresh,...part];
     render(); if(innerWidth<=960) openCart(true); }
   else if(t.dataset.grow){ const k=t.dataset.grow, i=st.grow.indexOf(k); if(i>=0) st.grow.splice(i,1); else st.grow.push(k); render(); }
   else if(t.dataset.growgo){ if(!st.grow.includes(t.dataset.growgo)) st.grow.push(t.dataset.growgo); openCart(false); render(); $("grow").scrollIntoView({behavior:"smooth",block:"start"}); }
@@ -1000,7 +1004,7 @@ document.addEventListener("click",e=>{
     st.role=st.role===k?"":k;
     const cur=ROLES.find(r=>r[0]===st.role);
     if(cur&&cur[3]&&!st.grow.includes(cur[3])) st.grow=[cur[3],...st.grow];
-    renderRoles(); renderGrow(); }
+    renderRoles(); renderGrow(); renderReset(); save(); }
   else if(t.dataset.indsub){ st.indSub=st.indSub===t.dataset.indsub?"":t.dataset.indsub; renderGrow(); }
   else if(t.dataset.moredirs){ st.moreDirs=!st.moreDirs; renderGrow(); }
   else if(t.dataset.growopen){ st.growOpen=!st.growOpen; renderGrow(); }
