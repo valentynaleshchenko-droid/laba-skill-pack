@@ -788,13 +788,13 @@ function growPicks(key,base,avgR,skipIds){
 function renderGrow(){
   const box=$("grow"), m=st.who.trim()?lastSelf:[];
   const sets=Math.floor(st.pick.length/3);
-  const fresh=!m.length&&!st.pick.length;   // людина ще нічого не написала й не обрала
+  const fresh=!m.length;   // людина не писала запит: блок напрямів стоїть під «Хто ти?»
   box.hidden=false;
   const ref=m.length?m.map(x=>x.c):st.pick.map(byId);
   const avgR=ref.length?ref.reduce((s,c)=>s+c.r,0)/ref.length:2;
   // приховуємо лише ті напрями, з яких людина вже поклала курс у кошик
   const inCart=st.pick.map(byId).filter(Boolean);
-  const covered=GROW.filter(g=>inCart.some(g[2])).map(g=>g[0]);
+  const covered=fresh?[]:GROW.filter(g=>inCart.some(g[2])&&!st.grow.includes(g[0])).map(g=>g[0]);
   const offer=GROW.filter(g=>!covered.includes(g[0]));
   st.grow=st.grow.filter(k=>offer.some(g=>g[0]===k));
   const already=covered.map(k=>GN[k]).join(" і ");
