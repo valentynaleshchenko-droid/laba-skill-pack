@@ -815,7 +815,7 @@ function renderGrow(){
     if(k==="ind"){
       const subs=IND_SUBS.map(([sk,sn,ids])=>[sk,sn,all.filter(c=>ids.includes(c.id))]).filter(s=>s[2].length);
       const cur=subs.find(s=>s[0]===st.indSub);
-      h+=`<div class="grow-row"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p></div>
+      h+=`<div class="grow-row" data-row="${k}"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p></div>
         <p class="ind-q">Яка твоя галузь?</p>
         <div class="chips ind-subs">${subs.map(([sk,sn,cs])=>`<button type="button" class="chip" data-indsub="${sk}" aria-pressed="${st.indSub===sk}">${st.indSub===sk?'<span aria-hidden="true">✓</span>':""}${sn} <span class="cnt">${cs.length}</span></button>`).join("")}</div>
         ${cur?`<div class="grid">${cur[2].map(c=>tile(c,true)).join("")}</div>`:""}</div>`;
@@ -823,7 +823,7 @@ function renderGrow(){
     }
     const ps=uniqTake(all,3); if(ps[0]&&!mix.includes(ps[0])) mix.push(ps[0]);
     const sum=ps.reduce((s,c)=>s+c.p,0);
-    h+=`<div class="grow-row"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p>
+    h+=`<div class="grow-row" data-row="${k}"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p>
       ${ps.length===3?(ps.every(c=>st.pick.includes(c.id))?`<button type="button" class="btn ghost" disabled style="width:auto">✓ Топ-3 уже в Skill Pack</button>`:`<button type="button" class="btn ghost" data-ready="${ps.map(c=>c.id).join(",")}" style="width:auto">Топ-3 окремим набором · <span class="num">${uah(sum*(1-DISC))}</span></button>`):""}</div>
       <div class="grid">${all.map(c=>{ const rk=!st.who.trim()&&(ROLES.find(r=>r[0]===st.role)||[])[2]; const team=(rk==="own"||rk==="head")&&c.aud&&c.aud.length&&!c.aud.includes("own")&&!c.aud.includes("head"); return tile(c,true,team); }).join("")}</div></div>`;
   }
@@ -994,8 +994,11 @@ document.addEventListener("click",e=>{
     const fresh=ids.filter(id=>!st.pick.includes(id)).slice(0,Math.max(0,MAXC-st.pick.length));
     st.pick=[...full,...fresh,...part];
     render(); if(innerWidth<=960) openCart(true); }
-  else if(t.dataset.grow){ const k=t.dataset.grow, i=st.grow.indexOf(k); if(i>=0) st.grow.splice(i,1); else st.grow.push(k); render(); }
-  else if(t.dataset.growgo){ if(!st.grow.includes(t.dataset.growgo)) st.grow.push(t.dataset.growgo); openCart(false); render(); $("grow").scrollIntoView({behavior:"smooth",block:"start"}); }
+  // напрями не обʼєднуємо: клік показує тільки обраний напрям, повторний клік — знімає його
+  else if(t.dataset.grow){ const k=t.dataset.grow; st.grow=st.grow.includes(k)?[]:[k]; st.indSub=""; render(); }
+  // напрям, обраний з кошика, показуємо САМ — без раніше обраних напрямів
+  else if(t.dataset.growgo){ const k=t.dataset.growgo; st.grow=[k]; st.indSub=""; openCart(false); render();
+    requestAnimationFrame(()=>{ const row=document.querySelector(`#grow [data-row="${k}"]`)||$("grow"); window.scrollTo({top:row.getBoundingClientRect().top+scrollY-12,behavior:"smooth"}); }); }
   else if(t.dataset.ask){ applyAsk(t.dataset.ask,t.dataset.val); }
   else if(t.dataset.niche){ $("who").value=st.who=st.who.replace(/[.,;\s]+$/,"")+": "+t.dataset.niche; render(); }
   else if(t.dataset.exmore){ $("examples").classList.add("open"); }
@@ -1003,7 +1006,7 @@ document.addEventListener("click",e=>{
     if(prev&&prev[3]) st.grow=st.grow.filter(g=>g!==prev[3]);
     st.role=st.role===k?"":k;
     const cur=ROLES.find(r=>r[0]===st.role);
-    if(cur&&cur[3]&&!st.grow.includes(cur[3])) st.grow=[cur[3],...st.grow];
+    if(cur&&cur[3]) st.grow=[cur[3]];
     renderRoles(); renderGrow(); renderReset(); save(); }
   else if(t.dataset.indsub){ st.indSub=st.indSub===t.dataset.indsub?"":t.dataset.indsub; renderGrow(); }
   else if(t.dataset.moredirs){ st.moreDirs=!st.moreDirs; renderGrow(); }
