@@ -337,6 +337,10 @@ header .lead{max-width:780px}
 .grow-toggle{font:inherit;font-weight:700;font-size:15px;background:none;border:0;padding:6px 0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:4px}
 .cart-empty{border:1.5px dashed var(--line);border-radius:14px;padding:14px}
 .perks-note{margin-top:12px}
+
+.ex{gap:6px 6px}
+.ex .ex-more{display:none;background:none!important;border:0!important;text-decoration:underline;text-underline-offset:3px;font-weight:700;color:var(--ink)}
+@media (max-width:700px){.ex:not(.open) button[data-ex]:nth-of-type(n+6){display:none}.ex:not(.open) .ex-more{display:inline-block}}
 /* phone: bottom bar + drawer */
 .shade{display:none}
 
@@ -564,7 +568,7 @@ function teamPicks(text,m){
     .map(c=>scoreCourse(c,us,dom,HAS)).sort((a,b)=>b.sc-a.sc||a.c.r-b.c.r)
     .filter((x,i,a)=>a.findIndex(y=>y.c.n===x.c.n)===i).slice(0,3).map(x=>x.c);
 }
-const EXAMPLES=["Власниця кав'ярні, хочу навести лад у фінансах","Керівник відділу продажів, хочу прокачати команду","HR-менеджерка в IT-компанії","Бухгалтер на виробництві, хочу рости","Відкриваю своє виробництво","Юрист у сфері нерухомості","Маркетолог-початківець в e-commerce"];
+const EXAMPLES=["Власниця кав'ярні, хочу навести лад у фінансах", "Фінансист, хочу стати фінансовим директором", "Маркетолог, хочу вийти на рівень стратегії", "Керівник відділу продажів, хочу прокачати команду", "Менеджер з продажу, хочу стати керівником відділу", "HR-менеджерка в IT-компанії", "Бухгалтерка, хочу перейти у фінанси", "Власник виробництва, хочу навести лад у процесах", "Аналітик, працюю в Excel, хочу освоїти Power BI", "Власник бізнесу, хочу впровадити AI", "Юрист компанії, хочу прокачати корпоративне право"];
 let whoHits={};
 
 // ---- уточнення: якщо людина не вказала позицію, сферу чи запит — питаємо ----
@@ -886,6 +890,7 @@ document.addEventListener("click",e=>{
   else if(t.dataset.growgo){ if(!st.grow.includes(t.dataset.growgo)) st.grow.push(t.dataset.growgo); openCart(false); render(); $("grow").scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(t.dataset.ask){ applyAsk(t.dataset.ask,t.dataset.val); }
   else if(t.dataset.niche){ $("who").value=st.who=st.who.replace(/[.,;\s]+$/,"")+": "+t.dataset.niche; render(); }
+  else if(t.dataset.exmore){ $("examples").classList.add("open"); }
   else if(t.dataset.growopen){ st.growOpen=true; renderGrow(); }
   else if(t.dataset.ex){ typeInto(t.dataset.ex); }
   else if(t.id==="whoGo"){ const w=$("who"); if(!w.value.trim()){ w.focus(); return; } const r=$("meRes"); if(r&&!r.hidden) r.scrollIntoView({behavior:"smooth",block:"start"}); }
@@ -917,7 +922,7 @@ function stopPh(){ phOn=false; clearTimeout(phT); $("who").placeholder="Напр
     if(dir<0&&i<=0){ dir=1; k++; phT=setTimeout(tick,300); return; }
     phT=setTimeout(tick,dir>0?55:18); })(); })();
 $("who").addEventListener("focus",()=>{ $("who").placeholder="Наприклад: власниця кав'ярні, хочу навести лад у фінансах"; });
-$("examples").insertAdjacentHTML("beforeend",EXAMPLES.slice(0,3).map(x=>`<button type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join(""));
+$("examples").insertAdjacentHTML("beforeend",EXAMPLES.map(x=>`<button type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join("")+`<button type="button" class="ex-more" data-exmore="1">Ще приклади</button>`);
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") openCart(false); });
 render();
 </script>
