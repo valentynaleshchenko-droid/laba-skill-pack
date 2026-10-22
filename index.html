@@ -758,7 +758,8 @@ function roleFit(c,base){
 function rolePicks(key,role,skipIds){
   const g=GROW.find(x=>x[0]===key);
   const lvl={nov:["J"],spec:["J","M"]}[role];
-  const ok=c=>!role||((!c.aud||!c.aud.length||c.aud.includes(role))&&(!lvl||!c.sn||!c.sn.length||c.sn.some(s=>lvl.includes(s))));
+  const boss=role==="own"||role==="head";
+  const ok=c=>!role||boss||((!c.aud||!c.aud.length||c.aud.includes(role))&&(!lvl||!c.sn||!c.sn.length||c.sn.some(s=>lvl.includes(s))));
   const top=c=>(key==="ai"&&/^AI /.test(c.n))||(key==="sales"&&/продаж|переговор/i.test(c.n))?0:1;
   return COURSES.filter(c=>g[2](c)&&!skipIds.has(c.id)&&ok(c)).sort((a,b)=>(top(a)-top(b))||(a.r-b.r)||(b.p-a.p));
 }
@@ -805,7 +806,7 @@ function renderGrow(){
     const sum=ps.reduce((s,c)=>s+c.p,0);
     h+=`<div class="grow-row"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p>
       ${ps.length===3?`<button type="button" class="btn ghost" data-ready="${ps.map(c=>c.id).join(",")}" style="width:auto">Топ-3 окремим набором · <span class="num">${uah(sum*(1-DISC))}</span></button>`:""}</div>
-      <div class="grid">${all.map(c=>tile(c,true)).join("")}</div></div>`;
+      <div class="grid">${all.map(c=>{ const rk=!st.who.trim()&&(ROLES.find(r=>r[0]===st.role)||[])[2]; const team=(rk==="own"||rk==="head")&&c.aud&&c.aud.length&&!c.aud.includes("own")&&!c.aud.includes("head"); return tile(c,true,team); }).join("")}</div></div>`;
   }
   if(mix.length>=3){ const ids=mix.slice(0,3), sum=ids.reduce((s,c)=>s+c.p,0);
     h+=`<div class="rb mixb"><h3>Набір-мікс: ${st.grow.slice(0,3).map(k=>GN[k]).join(" + ")}</h3><ol>${ids.map(c=>`<li>${esc(c.n)}</li>`).join("")}</ol>
