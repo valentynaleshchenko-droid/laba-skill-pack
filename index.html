@@ -403,6 +403,12 @@ h1 mark{border-radius:8px}
   .me-go::after{content:"→";font-size:24px;font-weight:800}
 }
 .more-dirs .sm{display:none}@media (max-width:700px){.more-dirs .lg{display:none}.more-dirs .sm{display:inline}}
+
+.ind-q{margin:4px 0 8px;font-weight:800;font-size:15px}
+.ind-subs{margin-bottom:12px}
+.ind-subs .chip .cnt{font-size:12px;color:var(--muted);margin-left:2px}
+.ind-subs .chip[aria-pressed="true"] .cnt{color:inherit;opacity:.7}
+@media (max-width:700px){.ind-subs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.ind-subs .chip{border-radius:12px;text-align:left;white-space:normal;line-height:1.2;padding:8px 10px}}
 /* phone: bottom bar + drawer */
 .shade{display:none}
 
@@ -730,6 +736,7 @@ const isAI=c=>/(^|[^a-zа-я])ai([^a-zа-я]|$)|штучн/i.test(c.n);
 const AIRX=/\bAI\b|(^|[^А-Яа-яІіЇїЄє])ШІ([^А-Яа-яІіЇїЄє]|$)|штучн|ChatGPT/i;
 const hasAI=c=>AIRX.test([c.n,c.d||"",...(c.rs||[]),...(c.pk||[]),...c.k].join(" "));
 const GROW=[["fin","Фінанси",c=>c.dir==="fin"],["mkt","Маркетинг",c=>c.dir==="mkt"],["sales","Продажі й закупівлі",c=>c.dir==="sales"],["mgmt","Команда",c=>c.dir==="mgmt"],["ops","Процеси",c=>c.dir==="ops"&&!/^AI /.test(c.n)],["ai","AI",c=>/(^|[^A-Za-z])AI([^A-Za-z]|$)/.test(c.n)],["data","Аналітика",c=>c.dir==="data"],["pm","Проєкти",c=>c.dir==="pm"],["hr","HR",c=>c.dir==="hr"],["law","Право",c=>c.dir==="law"],["ind","Галузевий бізнес",c=>c.dir==="ind"],["def","Defense",c=>c.dir==="def"]];
+const IND_SUBS=[["prod","Виробництво",[52,53,55,56,54,85,86]],["food","Ресторани й готелі",[60,61,62,63]],["med","Медицина й ветеринарія",[65,67,66]],["serv","Послуги",[90,68,80,1091,88,1089,87]],["trade","Торгівля",[79,81,89]],["realty","Нерухомість і будівництво",[71,72,41]],["log","Логістика й транспорт",[58,59,1090]],["other","Інше",[84,77,298]]];
 const REC={"":["fin","mkt","sales","mgmt","ops","ai"],own:["fin","mkt","sales","mgmt","ops","ai","ind"],head:["mgmt","ops","ai","fin","sales","pm"],fin:["fin","data","ai","mgmt"],mkt:["mkt","data","ai","sales"],data:["data","fin","ai","ops"],hr:["hr","mgmt","ai","law"],law:["law","fin","mgmt"],nov:["mkt","fin","sales","data","pm"]};
 const GN=Object.fromEntries(GROW.map(g=>[g[0],g[1]]));
 function scoreAll(text){
@@ -801,7 +808,16 @@ function renderGrow(){
     })()}</div></div>`;
   const skip=new Set(), mix=[];
   for(const k of st.grow){
-    const all=st.who.trim()?growPicks(k,st.who,avgR,skip):rolePicks(k,(ROLES.find(r=>r[0]===st.role)||[])[2]||"",skip); if(!all.length) continue;
+    let all=st.who.trim()?growPicks(k,st.who,avgR,skip):rolePicks(k,(ROLES.find(r=>r[0]===st.role)||[])[2]||"",skip); if(!all.length) continue;
+    if(k==="ind"){
+      const subs=IND_SUBS.map(([sk,sn,ids])=>[sk,sn,all.filter(c=>ids.includes(c.id))]).filter(s=>s[2].length);
+      const cur=subs.find(s=>s[0]===st.indSub);
+      h+=`<div class="grow-row"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p></div>
+        <p class="ind-q">Яка твоя галузь?</p>
+        <div class="chips ind-subs">${subs.map(([sk,sn,cs])=>`<button type="button" class="chip" data-indsub="${sk}" aria-pressed="${st.indSub===sk}">${st.indSub===sk?'<span aria-hidden="true">✓</span>':""}${sn} <span class="cnt">${cs.length}</span></button>`).join("")}</div>
+        ${cur?`<div class="grid">${cur[2].map(c=>tile(c,true)).join("")}</div>`:""}</div>`;
+      continue;
+    }
     const ps=uniqTake(all,3); if(ps[0]&&!mix.includes(ps[0])) mix.push(ps[0]);
     const sum=ps.reduce((s,c)=>s+c.p,0);
     h+=`<div class="grow-row"><div class="grow-h"><p class="sec-title" style="margin:0">${GN[k]} · ${all.length} ${plural(all.length,"курс","курси","курсів")}</p>
@@ -978,6 +994,7 @@ document.addEventListener("click",e=>{
     const cur=ROLES.find(r=>r[0]===st.role);
     if(cur&&cur[3]&&!st.grow.includes(cur[3])) st.grow=[cur[3],...st.grow];
     renderRoles(); renderGrow(); }
+  else if(t.dataset.indsub){ st.indSub=st.indSub===t.dataset.indsub?"":t.dataset.indsub; renderGrow(); }
   else if(t.dataset.moredirs){ st.moreDirs=!st.moreDirs; renderGrow(); }
   else if(t.dataset.growopen){ st.growOpen=!st.growOpen; renderGrow(); }
   else if(t.dataset.ex){ typeInto(t.dataset.ex); }
