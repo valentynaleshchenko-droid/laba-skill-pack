@@ -280,6 +280,9 @@ h1{max-width:22ch}
 }
 .cart{border:2px solid var(--ink)}
 .cart-h h2{display:flex;align-items:center;gap:10px}
+.cart-acts{display:flex;align-items:center;gap:6px}
+.clr{font:inherit;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:5px;background:#fff;border:1.5px solid var(--line);color:var(--ink);border-radius:99px;padding:6px 11px;cursor:pointer}.clr svg{width:15px;height:15px}.clr:hover{border-color:var(--cta);color:var(--cta)}
+.ptoast.undo{pointer-events:auto;display:flex;align-items:center;gap:14px;white-space:nowrap}.ptoast #undoClear{font:inherit;font-weight:800;background:none;border:0;color:var(--yellow);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0}
 .cart-h .cnt-badge{background:var(--yellow);border-radius:99px;font-size:14px;padding:2px 10px;font-weight:800}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
 .bump{animation:bump .35s ease}
@@ -928,9 +931,14 @@ function showHint(){ const n=st.pick.length, k=n%3; let h=document.getElementByI
   if(!h){ h=document.createElement("div"); h.id="pickToast"; h.className="ptoast"; h.setAttribute("role","status"); document.body.appendChild(h); }
   h.innerHTML= k? `<b>${k} з 3</b> у Skill Pack ${Math.ceil(n/3)} — додай ще ${3-k}, і −40% спрацює на всі три` : `<b>Skill Pack ${n/3} зібрано</b> — −40% на всі три курси ✓`;
   h.classList.toggle("ok",!k); void h.offsetWidth; h.classList.add("show"); clearTimeout(hintT); hintT=setTimeout(()=>h.classList.remove("show"),3500); }
+let lastCart=null;
+function showUndo(){ let h=document.getElementById("pickToast");
+  if(!h){ h=document.createElement("div"); h.id="pickToast"; h.className="ptoast"; h.setAttribute("role","status"); document.body.appendChild(h); }
+  h.innerHTML=`Кошик очищено <button type="button" id="undoClear">Повернути</button>`; h.classList.remove("ok"); h.classList.add("undo");
+  void h.offsetWidth; h.classList.add("show"); clearTimeout(hintT); hintT=setTimeout(()=>h.classList.remove("show","undo"),6000); }
 function renderCart(){
   const T=totals(), n=st.pick.length;
-  let h=`<div class="cart-h"><h2>Мій Skill Pack${n?`<span class="cnt-badge num">${n}</span>`:""}</h2><button type="button" class="close" id="close" aria-label="Закрити кошик">×</button></div>`;
+  let h=`<div class="cart-h"><h2>Мій Skill Pack${n?`<span class="cnt-badge num">${n}</span>`:""}</h2><div class="cart-acts">${n?`<button type="button" class="clr" id="clear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Очистити</button>`:""}<button type="button" class="close" id="close" aria-label="Закрити кошик">×</button></div></div>`;
   if(!n){ h+=`<div class="cart-empty"><div class="set-h"><b>0 з 3 курсів</b><span class="pill off">3 курси = −40%</span></div>
       <div class="meter"><i></i><i></i><i></i></div>
       <p class="note" style="margin:10px 0 0">Додай 3 курси — і отримаєш −40% на весь чек.</p></div>
@@ -956,7 +964,6 @@ function renderCart(){
   if(sg.length) h+=`<div class="sugg"><h3>Добре доповнить</h3>${sg.map(c=>`<div class="sg"><div>${esc(c.n)}<span>${esc(c.lv)} · ${uah(c.p)}</span></div><button type="button" class="add" data-add="${c.id}">+ Додати</button></div>`).join("")}</div>`;
   if(T.full) h+=`<button type="button" class="btn" id="order">Оформити зі знижкою</button><div id="orderBox"></div>`;
   else if(!n) h+=`<p class="note">Натисни «+ У Skill Pack» на курсі або візьми готовий набір.</p>`;
-  if(n) h+=`<button type="button" class="btn ghost" id="clear">Очистити кошик</button>`;
   h+=`<p class="note">Курси можна пройти самому, з колегами або віддати команді. Кожні наступні 3 — ще один Skill Pack −40% (до трьох). Остаточну ціну й оплату частинами підтвердить менеджер.</p>`;
   $("cart").innerHTML=h;
   const dots=`<span class="dots">${[0,1,2].map(k=>`<i class="${k<(n%3||(n?3:0))?"on":""}"></i>`).join("")}</span>`;
@@ -1019,7 +1026,8 @@ document.addEventListener("click",e=>{
   else if(t.dataset.ex){ typeInto(t.dataset.ex); }
   else if(t.id==="whoGo"){ const w=$("who"); if(!w.value.trim()){ w.focus(); return; } const r=$("meRes"); if(r&&!r.hidden) r.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(t.id==="whoClear"){ $("who").value=st.who=""; render(); $("who").focus(); }
-  else if(t.id==="clear"){ st.pick=[]; render(); }
+  else if(t.closest("#clear")){ lastCart=st.pick.slice(); st.pick=[]; render(); showUndo(); }
+  else if(t.id==="undoClear"){ if(lastCart){ st.pick=lastCart; lastCart=null; render(); } const h=$("pickToast"); if(h) h.classList.remove("show","undo"); }
   else if(t.id==="barBtn"){ openCart(true); }
   else if(t.id==="close"){ openCart(false); }
   else if(t.id==="order"){ const txt=orderText();
